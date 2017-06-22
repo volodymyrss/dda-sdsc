@@ -116,4 +116,3 @@ def test_osa_scw_blob():
     # B = Analysis()
 
     # assert B.data == A.data
-
