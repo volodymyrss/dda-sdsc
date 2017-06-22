@@ -1,0 +1,1 @@
+/home/savchenk/work/dockers/docker-integral-osa-testing/python_docker.sh
