@@ -1,6 +1,7 @@
 import dataanalysis.caches.cache_core as caches_core
 import ddosa
 import requests
+import os
 
 class BlobStorage(object):
     blobs={}
@@ -21,6 +22,18 @@ import urllib
 class SDSCStorageInterface:
     keys=[]
 
+    def get_token(self):
+        if "OPENID_TOKEN" in os.environ:
+            return os.environ["OPENID_TOKEN"]
+
+        if "OPENID_TOKEN_FILE" in os.environ:
+            token_file=os.environ["OPENID_TOKEN_FILE"]
+        else:
+            token_file=os.environ["HOME"] + "/.sdsc-token"
+
+        return open(token_file).read().strip()
+
+
     def put_blob(self,key,blob):
         print key
         self.keys.append(key)
@@ -30,7 +43,7 @@ class SDSCStorageInterface:
         res = requests.post(url=url,
                             data=blob,
                             headers={'Content-Type': 'application/octet-stream',
-                                     'Authorization':'Bearer '+open("/home/savchenk/work/sdsc/sdsc/gettoken/token").read().strip()},verify=False)
+                                     'Authorization':'Bearer '+self.get_token()},verify=False)
 
         print "uploaded",len(blob)/1024,"kb to",url
 
