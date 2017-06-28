@@ -76,3 +76,12 @@ class SDSCCache(caches_core.Cache):
 
     def make_record(self,*args,**kwargs):
         pass
+
+import ddosa
+import ddosadm
+
+cache=SDSCCache()
+cache.blob_store=SDSCStorageInterface()
+ddosa.CacheStack[-1].parent=cache
+
+ddosa.CatExtract.write_caches.append(cache.__class__)
