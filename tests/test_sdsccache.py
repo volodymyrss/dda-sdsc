@@ -14,11 +14,13 @@ def test_store_restore():
     A=Analysis()
 
     A.data="somedata"
-    hashe=('testhashe')
+    hashe=('analysis','input','testhashe')
 
     cache.store(hashe,A)
 
     print(blob_store.blobs)
+
+
 
     #da.reset()
 
