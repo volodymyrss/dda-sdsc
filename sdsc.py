@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import dataanalysis.caches.cache_core as caches_core
 import ddosa
 import requests
@@ -21,52 +23,54 @@ import urllib
 
 class SDSCStorageInterface:
     keys=[]
+    
+    
+    def get_bucket(self):
+        buckets=[]
+        for bucket in client.buckets.list():
+            print(bucket)
+            buckets.append(bucket)
 
-    def get_token(self):
-        if "OPENID_TOKEN" in os.environ:
-            return os.environ["OPENID_TOKEN"]
+        bucket_of_choice=buckets[0]
 
-        if "OPENID_TOKEN_FILE" in os.environ:
-            token_file=os.environ["OPENID_TOKEN_FILE"]
-        else:
-            token_file=os.environ["HOME"] + "/.sdsc-token"
+        print("choosing bucket:",bucket_of_choice)
 
-        return open(token_file).read().strip()
+        return bucket_of_choice
 
+    def filename_for_key(self,key):
+        return "test/astronomy/integral/" + key
 
     def put_blob(self,key,blob):
-        print key
+        print(key)
         self.keys.append(key)
 
-        url='https://testing.datascience.ch:9000/write/'+urllib.quote_plus("test/astronomy/integral/"+key)
+        bucket=self.get_bucket()
+        filename=self.filename_for_key(key)
 
-        res = requests.post(url=url,
-                            data=blob,
-                            headers={'Content-Type': 'application/octet-stream',
-                                     'Authorization':'Bearer '+self.get_token()},verify=False)
+        with bucket.files.open(filename, 'w') as fp:
+            fp.write(blob)
 
-        print "uploaded",len(blob)/1024,"kb to",url
+        print("uploaded",len(blob)/1024,"kb to",filename,"at",bucket)
 
     def get_blob(self,key):
-        url='https://testing.datascience.ch:9000/read/' + urllib.quote_plus("test/astronomy/integral/"+key)
-        res = requests.get(url=url,
-                           headers={'Authorization': 'Bearer ' + open(
-                               "/home/savchenk/work/sdsc/sdsc/gettoken/token").read().strip()}, verify=False)
+        print(key)
+        self.keys.append(key)
 
-        print "downloaded",len(res.content)/1024,"kb from",url
+        bucket = self.get_bucket()
+        filename = self.filename_for_key(key)
 
-        return res.content
+        with bucket.files.open(filename) as fp:
+            blob=fp.read()
+
+        print("downloaded",len(blob)/1024,"kb from",filename,"at",bucket)
+
+        return blob
 
 
 class SDSCCache(caches_core.Cache):
 
     blob_store=blob_store
 
-    #def store(self):
-    #    pass
-
-    #def restore(self):
-    #def store(self):
     def store_object_content(self,hashe,obj):
         key=ddosa.MemCacheIntegralFallback().hashe2signature(hashe)
 
